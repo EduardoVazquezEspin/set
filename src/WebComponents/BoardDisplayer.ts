@@ -1,8 +1,6 @@
 import {Card} from '../interfaces';
 
 export class BoardDisplayer extends HTMLElement{
-  static observedAttributes = ['card-array'];
-
   private readonly root: ShadowRoot;
   private readonly container: HTMLDivElement;
   private subscriptions: Array<() => void>;

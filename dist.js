@@ -62,6 +62,8 @@ class Signal {
 class GameManager {
     constructor() {
         this.cards = new Signal([]);
+        this.sets = new Signal([]);
+        this.foundSets = new Signal([]);
         this.initGame();
     }
     initGame() {
@@ -73,6 +75,8 @@ class GameManager {
             }
         }
         this.cards.set(cards);
+        this.calculateAllSets();
+        this.foundSets.set([]);
     }
     generateCardId() {
         return `${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}`;
@@ -83,6 +87,12 @@ class GameManager {
     getCard(id) {
         return this.cards.get().find(it => it.get().id === id);
     }
+    getSets() {
+        return this.sets;
+    }
+    getFoundSets() {
+        return this.foundSets;
+    }
     toggleCardSelected(cardId) {
         const card = this.cards.get().find(it => it.get().id === cardId);
         if (card === undefined)
@@ -92,23 +102,41 @@ class GameManager {
     }
     checkVictory() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield new Promise((res) => setTimeout(res, 1));
-            const selectedIds = this.cards
+            yield new Promise((res) => setTimeout(res, 10));
+            const selectedCards = this.cards
                 .get()
-                .map(it => it.get())
-                .filter(it => it.isSelected)
-                .map(it => it.id);
+                .filter(it => it.get().isSelected);
+            const selectedIds = selectedCards.map(it => it.get().id);
             if (selectedIds.length !== 3)
                 return;
-            if (this.isSet(selectedIds[0], selectedIds[1], selectedIds[2]))
-                alert('You win!');
-            else
-                alert('You lose');
+            const isSet = this.isSet([selectedIds[0], selectedIds[1], selectedIds[2]]);
+            selectedCards.forEach(it => it.set({ id: it.get().id, isSelected: false }));
+            if (!isSet) {
+                alert('Wrong');
+                return;
+            }
+            // Check if set is already found
+            this.foundSets.set([...this.foundSets.get(), selectedIds]);
         });
     }
-    isSet(card1, card2, card3) {
+    calculateAllSets() {
+        const cards = this.cards.get().map(it => it.get());
+        const sets = [];
+        for (let i = 0; i < cards.length - 2; i++) {
+            for (let j = i + 1; j < cards.length - 1; j++) {
+                for (let k = j + 1; k < cards.length; k++) {
+                    const set = [cards[i].id, cards[j].id, cards[k].id];
+                    if (this.isSet(set)) {
+                        sets.push(set);
+                    }
+                }
+            }
+        }
+        this.sets.set(sets);
+    }
+    isSet(set) {
         for (let i = 0; i < 4; i++) {
-            if (!this.areThreeCharactersAllEqualOrAllDifferent(card1[i], card2[i], card3[i]))
+            if (!this.areThreeCharactersAllEqualOrAllDifferent(set[0][i], set[1][i], set[2][i]))
                 return false;
         }
         return true;
@@ -303,7 +331,6 @@ class BoardDisplayer extends HTMLElement {
         this.subscriptions = [];
     }
 }
-BoardDisplayer.observedAttributes = ['card-array'];
 BoardDisplayer.styles = `
   .container {
     display: grid;
@@ -314,6 +341,61 @@ BoardDisplayer.styles = `
   }
   `.replaceAll('\n', '');
 customElements.define('board-displayer', BoardDisplayer);
+
+class GameDisplayer extends HTMLElement {
+    constructor() {
+        super();
+        this.root = this.attachShadow({ mode: 'open' });
+        this.subscriptions = [];
+        const style = document.createElement('style');
+        style.innerText = GameDisplayer.styles;
+        this.root.appendChild(style);
+        this.container = document.createElement('div');
+        this.container.setAttribute('class', 'container');
+        this.root.appendChild(this.container);
+        const board = document.createElement('board-displayer');
+        this.container.appendChild(board);
+        const menu = document.createElement('div');
+        menu.setAttribute('class', 'menu');
+        this.container.appendChild(menu);
+        this.totalSetsP = document.createElement('p');
+        menu.appendChild(this.totalSetsP);
+        this.totalFoundP = document.createElement('p');
+        menu.appendChild(this.totalFoundP);
+    }
+    connectedCallback() {
+        const gameManager = getGameManager();
+        const totalSets = gameManager.getSets();
+        const foundSets = gameManager.getFoundSets();
+        this.subscriptions.forEach(cb => cb());
+        this.subscriptions = [];
+        const unsubTotalSets = totalSets.subscribeAndRun(sets => {
+            this.totalSetsP.innerText = `Total sets: ${sets.length}`;
+        });
+        const unsubFoundSets = foundSets.subscribeAndRun(sets => {
+            this.totalFoundP.innerText = `Found sets: ${JSON.stringify(sets)}`;
+        });
+        this.subscriptions.push(unsubTotalSets, unsubFoundSets);
+    }
+    disconnectedCallback() {
+        this.subscriptions.forEach(cb => cb());
+        this.subscriptions = [];
+    }
+    attributeChangedCallback(property, oldValue, newValue) {
+        if (oldValue === newValue)
+            return;
+    }
+}
+GameDisplayer.observedAttributes = ['card-array'];
+GameDisplayer.styles = `
+  .container {
+    display: flex;
+    flex-direction: row;
+  }
+  .menu{
+  }
+  `.replaceAll('\n', '');
+customElements.define('game-displayer', GameDisplayer);
 
 const gameManager = new GameManager();
 globalThis.getGameManager = () => gameManager;

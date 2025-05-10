@@ -1,11 +1,15 @@
 import {Signal} from '../Classes';
-import {Card} from '../interfaces';
+import {Card, Set} from '../interfaces';
 
 export class GameManager{
   private cards: Signal<Array<Signal<Card>>>;
+  private sets: Signal<Array<Set>>;
+  private foundSets: Signal<Array<Set>>;
 
   constructor(){
     this.cards = new Signal<Array<Signal<Card>>>([]);
+    this.sets = new Signal<Array<Set>>([]);
+    this.foundSets = new Signal<Array<Set>>([]);
     this.initGame();
   }
 
@@ -18,6 +22,8 @@ export class GameManager{
       }
     }
     this.cards.set(cards);
+    this.calculateAllSets();
+    this.foundSets.set([]);
   }
 
   private generateCardId(){
@@ -32,6 +38,14 @@ export class GameManager{
     return this.cards.get().find(it => it.get().id === id);
   }
 
+  getSets(): Signal<Set[]>{
+    return this.sets;
+  }
+
+  getFoundSets(): Signal<Set[]>{
+    return this.foundSets;
+  }
+
   toggleCardSelected(cardId: string){
     const card = this.cards.get().find(it => it.get().id === cardId);
     if(card === undefined) return;
@@ -42,25 +56,50 @@ export class GameManager{
   }
 
   private async checkVictory(){
-    await new Promise((res) => setTimeout(res, 1));
-    const selectedIds = this.cards
+    await new Promise((res) => setTimeout(res, 10));
+    const selectedCards = this.cards
       .get()
-      .map(it => it.get())
-      .filter(it => it.isSelected)
-      .map(it => it.id);
+      .filter(it => it.get().isSelected);
+
+    const selectedIds = selectedCards.map(it => it.get().id);
 
     if(selectedIds.length !== 3)
       return;
 
-    if(this.isSet(selectedIds[0], selectedIds[1], selectedIds[2]))
-      alert('You win!');
-    else
-      alert('You lose');
+    const isSet = this.isSet([selectedIds[0], selectedIds[1], selectedIds[2]]);
+
+    selectedCards.forEach(it => it.set({id: it.get().id, isSelected: false}));
+
+    if(!isSet){
+      alert('Wrong');
+      return;
+    }
+
+    // Check if set is already found
+    this.foundSets.set([...this.foundSets.get(), selectedIds as Set]);
+
   }
 
-  private isSet(card1: string, card2: string, card3: string): boolean{
+  private calculateAllSets(){
+    const cards = this.cards.get().map(it => it.get());
+    const sets: Set[] = [];
+    for(let i = 0; i < cards.length - 2; i++){
+      for(let j = i + 1; j < cards.length - 1; j++){
+        for(let k = j + 1; k < cards.length; k++){
+          const set: Set = [cards[i].id, cards[j].id, cards[k].id];
+          if(this.isSet(set)){
+            sets.push(set);
+
+          }
+        }
+      }
+    }
+    this.sets.set(sets);
+  }
+
+  private isSet(set: Set): boolean{
     for(let i = 0; i < 4; i++){
-      if(!this.areThreeCharactersAllEqualOrAllDifferent(card1[i], card2[i], card3[i]))
+      if(!this.areThreeCharactersAllEqualOrAllDifferent(set[0][i], set[1][i], set[2][i]))
         return false;
     }
     return true;

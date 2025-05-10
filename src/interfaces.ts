@@ -9,7 +9,9 @@ export interface IWebComponent{
 export interface Card{
     id: string;
     isSelected: boolean
-  }
+}
+
+export type Set = [string, string, string];
 
 declare global{
     function getGameManager(): GameManager;
