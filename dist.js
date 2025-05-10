@@ -383,22 +383,18 @@ class GameDisplayer extends HTMLElement {
         this.container.appendChild(menu);
         this.totalSetsP = document.createElement('p');
         menu.appendChild(this.totalSetsP);
-        this.totalFoundP = document.createElement('p');
-        menu.appendChild(this.totalFoundP);
+        const foundSets = document.createElement('found-sets-displayer');
+        menu.appendChild(foundSets);
     }
     connectedCallback() {
         const gameManager = getGameManager();
         const totalSets = gameManager.getSets();
-        const foundSets = gameManager.getFoundSets();
         this.subscriptions.forEach(cb => cb());
         this.subscriptions = [];
         const unsubTotalSets = totalSets.subscribeAndRun(sets => {
             this.totalSetsP.innerText = `Total sets: ${sets.length}`;
         });
-        const unsubFoundSets = foundSets.subscribeAndRun(sets => {
-            this.totalFoundP.innerText = `Found sets: ${JSON.stringify(sets.map(it => it.getCards()))}`;
-        });
-        this.subscriptions.push(unsubTotalSets, unsubFoundSets);
+        this.subscriptions.push(unsubTotalSets);
     }
     disconnectedCallback() {
         this.subscriptions.forEach(cb => cb());
@@ -419,6 +415,65 @@ GameDisplayer.styles = `
   }
   `.replaceAll('\n', '');
 customElements.define('game-displayer', GameDisplayer);
+
+class FoundSetsDisplayer extends HTMLElement {
+    constructor() {
+        super();
+        this.root = this.attachShadow({ mode: 'open' });
+        this.subscriptions = [];
+        const style = document.createElement('style');
+        style.innerHTML = FoundSetsDisplayer.styles;
+        this.root.appendChild(style);
+        this.container = document.createElement('div');
+        this.container.setAttribute('class', 'container');
+        this.root.appendChild(this.container);
+    }
+    connectedCallback() {
+        const gameManager = getGameManager();
+        const foundSets = gameManager.getFoundSets();
+        this.subscriptions.forEach(cb => cb());
+        this.subscriptions = [];
+        const subs = foundSets.subscribeAndRun((sets) => {
+            while (this.container.lastChild !== null)
+                this.container.removeChild(this.container.lastChild);
+            sets.forEach(set => {
+                const cards = set.getCards();
+                cards.forEach(card => {
+                    const cardDisplay = document.createElement('img');
+                    cardDisplay.src = `./public/${card}R.png`;
+                    cardDisplay.setAttribute('class', 'card');
+                    this.container.appendChild(cardDisplay);
+                });
+            });
+        });
+        this.subscriptions.push(subs);
+    }
+    disconnectedCallback() {
+        this.subscriptions.forEach(cb => cb());
+        this.subscriptions = [];
+    }
+    attributeChangedCallback(property, oldValue, newValue) {
+        if (oldValue !== newValue)
+            return;
+    }
+}
+FoundSetsDisplayer.styles = `
+  .container {
+    display: grid;
+    grid-template-columns: var(--mini-card-w) var(--mini-card-w) var(--mini-card-w);
+    grid-gap: 3px;
+    padding: 5px;
+  }
+
+  .card {
+    width: var(--mini-card-w);
+    height: var(--mini-card-h);
+    border: 1px black solid;
+    border-radius: var(--card-border);
+    box-shadow: 2px 1px 1px black;
+  }
+  `.replaceAll('\n', '');
+customElements.define('found-sets-displayer', FoundSetsDisplayer);
 
 const gameManager = new GameManager();
 globalThis.getGameManager = () => gameManager;

@@ -6,7 +6,6 @@ export class GameDisplayer extends HTMLElement implements IWebComponent{
   private readonly root: ShadowRoot;
   private readonly container: HTMLDivElement;
   private readonly totalSetsP: HTMLParagraphElement;
-  private readonly totalFoundP: HTMLParagraphElement;
   private subscriptions: Array<() => void>;
 
   private static styles = /* css */`
@@ -42,14 +41,13 @@ export class GameDisplayer extends HTMLElement implements IWebComponent{
     this.totalSetsP = document.createElement('p');
     menu.appendChild(this.totalSetsP);
 
-    this.totalFoundP = document.createElement('p');
-    menu.appendChild(this.totalFoundP);
+    const foundSets = document.createElement('found-sets-displayer');
+    menu.appendChild(foundSets);
   }
 
   connectedCallback(){
     const gameManager = getGameManager();
     const totalSets = gameManager.getSets();
-    const foundSets = gameManager.getFoundSets();
 
     this.subscriptions.forEach(cb => cb());
     this.subscriptions = [];
@@ -58,11 +56,7 @@ export class GameDisplayer extends HTMLElement implements IWebComponent{
       this.totalSetsP.innerText = `Total sets: ${sets.length}`;
     });
 
-    const unsubFoundSets = foundSets.subscribeAndRun(sets => {
-      this.totalFoundP.innerText = `Found sets: ${JSON.stringify(sets.map(it => it.getCards()))}`;
-    });
-
-    this.subscriptions.push(unsubTotalSets, unsubFoundSets);
+    this.subscriptions.push(unsubTotalSets);
   }
 
   disconnectedCallback(): void {
