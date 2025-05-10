@@ -1,0 +1,8 @@
+yarn.lock
+.yarnrc
+.yarn
+.vscode
+node_modules
+coverage
+**/input.txt
+dist.js.map
