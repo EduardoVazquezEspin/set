@@ -1,5 +1,5 @@
-import {Signal} from '../Classes';
-import {Card, Set} from '../interfaces';
+import {Signal, Set} from '../Classes';
+import type {Card} from '../interfaces';
 
 export class GameManager{
   private cards: Signal<Array<Signal<Card>>>;
@@ -66,18 +66,21 @@ export class GameManager{
     if(selectedIds.length !== 3)
       return;
 
-    const isSet = this.isSet([selectedIds[0], selectedIds[1], selectedIds[2]]);
+    const set = new Set(selectedIds);
 
     selectedCards.forEach(it => it.set({id: it.get().id, isSelected: false}));
 
-    if(!isSet){
+    if(!set.isValid()){
       alert('Wrong');
       return;
     }
 
-    // Check if set is already found
-    this.foundSets.set([...this.foundSets.get(), selectedIds as Set]);
+    if(this.foundSets.get().some(it => it.equals(set))){
+      alert('Already found');
+      return;
+    }
 
+    this.foundSets.set([...this.foundSets.get(), set]);
   }
 
   private calculateAllSets(){
@@ -86,30 +89,13 @@ export class GameManager{
     for(let i = 0; i < cards.length - 2; i++){
       for(let j = i + 1; j < cards.length - 1; j++){
         for(let k = j + 1; k < cards.length; k++){
-          const set: Set = [cards[i].id, cards[j].id, cards[k].id];
-          if(this.isSet(set)){
+          const set = new Set([cards[i].id, cards[j].id, cards[k].id]);
+          if(set.isValid()){
             sets.push(set);
-
           }
         }
       }
     }
     this.sets.set(sets);
-  }
-
-  private isSet(set: Set): boolean{
-    for(let i = 0; i < 4; i++){
-      if(!this.areThreeCharactersAllEqualOrAllDifferent(set[0][i], set[1][i], set[2][i]))
-        return false;
-    }
-    return true;
-  }
-
-  private areThreeCharactersAllEqualOrAllDifferent(ch1: string, ch2: string, ch3: string){
-    if(ch1 === ch2 && ch1 === ch3)
-      return true;
-    if(ch1 === ch2 || ch1 === ch3 || ch2 === ch3)
-      return false;
-    return true;
   }
 }

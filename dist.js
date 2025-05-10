@@ -59,6 +59,40 @@ class Signal {
     }
 }
 
+class Set {
+    constructor(set) {
+        if (set.length !== 3)
+            throw new Error('Invalid set length');
+        this.cards = set;
+    }
+    getCards() {
+        return this.cards;
+    }
+    isValid() {
+        for (let i = 0; i < 4; i++) {
+            if (!this.areThreeCharactersAllEqualOrAllDifferent(this.cards[0][i], this.cards[1][i], this.cards[2][i]))
+                return false;
+        }
+        return true;
+    }
+    areThreeCharactersAllEqualOrAllDifferent(ch1, ch2, ch3) {
+        if (ch1 === ch2 && ch1 === ch3)
+            return true;
+        if (ch1 === ch2 || ch1 === ch3 || ch2 === ch3)
+            return false;
+        return true;
+    }
+    equals(other) {
+        if (!other.cards.includes(this.cards[0]))
+            return false;
+        if (!other.cards.includes(this.cards[1]))
+            return false;
+        if (!other.cards.includes(this.cards[2]))
+            return false;
+        return true;
+    }
+}
+
 class GameManager {
     constructor() {
         this.cards = new Signal([]);
@@ -109,14 +143,17 @@ class GameManager {
             const selectedIds = selectedCards.map(it => it.get().id);
             if (selectedIds.length !== 3)
                 return;
-            const isSet = this.isSet([selectedIds[0], selectedIds[1], selectedIds[2]]);
+            const set = new Set(selectedIds);
             selectedCards.forEach(it => it.set({ id: it.get().id, isSelected: false }));
-            if (!isSet) {
+            if (!set.isValid()) {
                 alert('Wrong');
                 return;
             }
-            // Check if set is already found
-            this.foundSets.set([...this.foundSets.get(), selectedIds]);
+            if (this.foundSets.get().some(it => it.equals(set))) {
+                alert('Already found');
+                return;
+            }
+            this.foundSets.set([...this.foundSets.get(), set]);
         });
     }
     calculateAllSets() {
@@ -125,28 +162,14 @@ class GameManager {
         for (let i = 0; i < cards.length - 2; i++) {
             for (let j = i + 1; j < cards.length - 1; j++) {
                 for (let k = j + 1; k < cards.length; k++) {
-                    const set = [cards[i].id, cards[j].id, cards[k].id];
-                    if (this.isSet(set)) {
+                    const set = new Set([cards[i].id, cards[j].id, cards[k].id]);
+                    if (set.isValid()) {
                         sets.push(set);
                     }
                 }
             }
         }
         this.sets.set(sets);
-    }
-    isSet(set) {
-        for (let i = 0; i < 4; i++) {
-            if (!this.areThreeCharactersAllEqualOrAllDifferent(set[0][i], set[1][i], set[2][i]))
-                return false;
-        }
-        return true;
-    }
-    areThreeCharactersAllEqualOrAllDifferent(ch1, ch2, ch3) {
-        if (ch1 === ch2 && ch1 === ch3)
-            return true;
-        if (ch1 === ch2 || ch1 === ch3 || ch2 === ch3)
-            return false;
-        return true;
     }
 }
 
@@ -373,7 +396,7 @@ class GameDisplayer extends HTMLElement {
             this.totalSetsP.innerText = `Total sets: ${sets.length}`;
         });
         const unsubFoundSets = foundSets.subscribeAndRun(sets => {
-            this.totalFoundP.innerText = `Found sets: ${JSON.stringify(sets)}`;
+            this.totalFoundP.innerText = `Found sets: ${JSON.stringify(sets.map(it => it.getCards()))}`;
         });
         this.subscriptions.push(unsubTotalSets, unsubFoundSets);
     }

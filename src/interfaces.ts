@@ -11,8 +11,6 @@ export interface Card{
     isSelected: boolean
 }
 
-export type Set = [string, string, string];
-
 declare global{
     function getGameManager(): GameManager;
 }

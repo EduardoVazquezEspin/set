@@ -59,7 +59,7 @@ export class GameDisplayer extends HTMLElement implements IWebComponent{
     });
 
     const unsubFoundSets = foundSets.subscribeAndRun(sets => {
-      this.totalFoundP.innerText = `Found sets: ${JSON.stringify(sets)}`;
+      this.totalFoundP.innerText = `Found sets: ${JSON.stringify(sets.map(it => it.getCards()))}`;
     });
 
     this.subscriptions.push(unsubTotalSets, unsubFoundSets);
