@@ -59,6 +59,7 @@ export class BoardDisplayer extends HTMLElement{
     cards.forEach((card) => {
       const cardDisplayer = document.createElement('card-displayer');
       cardDisplayer.setAttribute('card-id', card.id);
+      cardDisplayer.setAttribute('clickable', 'true');
       this.container.appendChild(cardDisplayer);
     });
   };

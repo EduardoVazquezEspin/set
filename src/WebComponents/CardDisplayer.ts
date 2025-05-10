@@ -1,7 +1,7 @@
 import {Card, IWebComponent} from '../interfaces';
 
 export class CardDisplayer extends HTMLElement implements IWebComponent{
-  static observedAttributes = ['card-id'];
+  static observedAttributes = ['card-id', 'clickable'];
 
   readonly root: ShadowRoot;
   private subscriptions: Array<() => void>;
@@ -33,7 +33,6 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
     this.root.appendChild(style);
 
     const img = document.createElement('img');
-    img.addEventListener('click', this.onClick);
     img.setAttribute('class', 'card');
     this.root.appendChild(img);
   }
@@ -71,6 +70,8 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
       case 'card-id':
         this.attributeChangedCallbackCardId(newValue);
         break;
+      case 'clickable':
+        this.attributeChangedCallbackClickable(newValue);
     }
   }
 
@@ -91,6 +92,20 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
     if(img === null) return;
     img.src = `./public/${value}.png`;
   }
+
+  private attributeChangedCallbackClickable = (value: string | null) => {
+    const isClickable = value === 'true';
+    const img = this.root.querySelector('img');
+    if(img === null)
+      return;
+
+    if(isClickable){
+      img.addEventListener('click', this.onClick);
+    }
+    else{
+      img.removeEventListener('click', this.onClick);
+    }
+  };
 }
 
 customElements.define('card-displayer', CardDisplayer);

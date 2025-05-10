@@ -190,13 +190,24 @@ class CardDisplayer extends HTMLElement {
             else
                 img.setAttribute('class', 'card');
         };
+        this.attributeChangedCallbackClickable = (value) => {
+            const isClickable = value === 'true';
+            const img = this.root.querySelector('img');
+            if (img === null)
+                return;
+            if (isClickable) {
+                img.addEventListener('click', this.onClick);
+            }
+            else {
+                img.removeEventListener('click', this.onClick);
+            }
+        };
         this.root = this.attachShadow({ mode: 'open' });
         this.subscriptions = [];
         const style = document.createElement('style');
         style.innerText = CardDisplayer.styles;
         this.root.appendChild(style);
         const img = document.createElement('img');
-        img.addEventListener('click', this.onClick);
         img.setAttribute('class', 'card');
         this.root.appendChild(img);
     }
@@ -224,6 +235,8 @@ class CardDisplayer extends HTMLElement {
             case 'card-id':
                 this.attributeChangedCallbackCardId(newValue);
                 break;
+            case 'clickable':
+                this.attributeChangedCallbackClickable(newValue);
         }
     }
     attributeChangedCallbackCardId(value) {
@@ -235,7 +248,7 @@ class CardDisplayer extends HTMLElement {
         img.src = `./public/${value}.png`;
     }
 }
-CardDisplayer.observedAttributes = ['card-id'];
+CardDisplayer.observedAttributes = ['card-id', 'clickable'];
 CardDisplayer.styles = `
   .card {
     width: var(--card-w);
@@ -261,6 +274,7 @@ class BoardDisplayer extends HTMLElement {
             cards.forEach((card) => {
                 const cardDisplayer = document.createElement('card-displayer');
                 cardDisplayer.setAttribute('card-id', card.id);
+                cardDisplayer.setAttribute('clickable', 'true');
                 this.container.appendChild(cardDisplayer);
             });
         };
