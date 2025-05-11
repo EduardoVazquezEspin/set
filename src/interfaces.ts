@@ -1,4 +1,4 @@
-import type {GameManager} from './Managers';
+import type {FeaturesManager, GameManager} from './Managers';
 
 export interface IWebComponent{
     connectedCallback(): void;
@@ -13,4 +13,5 @@ export interface Card{
 
 declare global{
     function getGameManager(): GameManager;
+    function getFeaturesManager(): FeaturesManager
 }

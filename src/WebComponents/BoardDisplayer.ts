@@ -51,8 +51,8 @@ export class BoardDisplayer extends HTMLElement{
   }
 
   private renderAllCards = (cards: Card[]) =>{
-    while(this.lastChild)
-      this.removeChild(this.lastChild);
+    while(this.container.lastChild)
+      this.container.removeChild(this.container.lastChild);
 
     cards.forEach((card) => {
       const cardDisplayer = document.createElement('card-displayer');

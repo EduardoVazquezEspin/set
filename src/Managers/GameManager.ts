@@ -13,16 +13,22 @@ export class GameManager{
     this.initGame();
   }
 
-  private initGame(){
-    const cards : Array<Signal<Card>> = [];
-    while(cards.length < 12){
-      const cardId = this.generateCardId();
-      if(cards.every((card) => card.get().id !== cardId)){
-        cards.push(new Signal<Card>({id: cardId, isSelected: false}));
+  initGame(){
+    let solutions: Set[] = [];
+    const featuresManager = getFeaturesManager();
+    const preventNoSolution = featuresManager.isFeatureEnabled('PREVENT-NO-SOLUTION');
+    do{
+      const cards: Array<Signal<Card>> = [];
+      while(cards.length < 12){
+        const cardId = this.generateCardId();
+        if(cards.every((card) => card.get().id !== cardId)){
+          cards.push(new Signal<Card>({id: cardId, isSelected: false}));
+        }
       }
-    }
-    this.cards.set(cards);
-    this.calculateAllSets();
+      this.cards.set(cards);
+      solutions = this.calculateAllSets();
+    } while(preventNoSolution && solutions.length === 0);
+    this.sets.set(solutions);
     this.foundSets.set([]);
   }
 
@@ -83,7 +89,7 @@ export class GameManager{
     this.foundSets.set([...this.foundSets.get(), set]);
   }
 
-  private calculateAllSets(){
+  private calculateAllSets(): Set[]{
     const cards = this.cards.get().map(it => it.get());
     const sets: Set[] = [];
     for(let i = 0; i < cards.length - 2; i++){
@@ -96,6 +102,6 @@ export class GameManager{
         }
       }
     }
-    this.sets.set(sets);
+    return sets;
   }
 }

@@ -2,7 +2,7 @@
     --card-w: 258px;
     --card-h: 167px;
     --card-border: 10px;
-    --mini-card-factor: 0.5;
+    --mini-card-factor: 0.4;
     --mini-card-w: calc(var(--mini-card-factor) * var(--card-h));
     --mini-card-h: calc(var(--mini-card-factor) * var(--card-w));
     --mini-card-border: calc(var(--mini-card-factor) * var(--mini-card-factor));

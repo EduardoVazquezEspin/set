@@ -20,6 +20,11 @@ export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
     border-radius: var(--card-border);
     box-shadow: 2px 1px 1px black;
   }
+
+  button{
+    width: max-content;
+    height: max-content;
+  }
   `.replaceAll('\n', '');
 
   constructor(){
@@ -57,6 +62,16 @@ export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
           this.container.appendChild(cardDisplay);
         });
       });
+
+      const totalSets = gameManager.getSets().get().length;
+      if(sets.length === totalSets){
+        const youWonButton = document.createElement('button');
+        youWonButton.innerHTML = 'You won!<br>Start again?';
+        youWonButton.onclick = () => {
+          gameManager.initGame();
+        };
+        this.container.appendChild(youWonButton);
+      }
     });
 
     this.subscriptions.push(subs);

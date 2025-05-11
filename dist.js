@@ -101,15 +101,21 @@ class GameManager {
         this.initGame();
     }
     initGame() {
-        const cards = [];
-        while (cards.length < 12) {
-            const cardId = this.generateCardId();
-            if (cards.every((card) => card.get().id !== cardId)) {
-                cards.push(new Signal({ id: cardId, isSelected: false }));
+        let solutions = [];
+        const featuresManager = getFeaturesManager();
+        const preventNoSolution = featuresManager.isFeatureEnabled('PREVENT-NO-SOLUTION');
+        do {
+            const cards = [];
+            while (cards.length < 12) {
+                const cardId = this.generateCardId();
+                if (cards.every((card) => card.get().id !== cardId)) {
+                    cards.push(new Signal({ id: cardId, isSelected: false }));
+                }
             }
-        }
-        this.cards.set(cards);
-        this.calculateAllSets();
+            this.cards.set(cards);
+            solutions = this.calculateAllSets();
+        } while (preventNoSolution && solutions.length === 0);
+        this.sets.set(solutions);
         this.foundSets.set([]);
     }
     generateCardId() {
@@ -169,7 +175,17 @@ class GameManager {
                 }
             }
         }
-        this.sets.set(sets);
+        return sets;
+    }
+}
+
+class FeaturesManager {
+    constructor() {
+        this.dictionary = new Map();
+        this.dictionary.set('PREVENT-NO-SOLUTION', true);
+    }
+    isFeatureEnabled(key) {
+        return this.dictionary.get(key);
     }
 }
 
@@ -320,8 +336,8 @@ class BoardDisplayer extends HTMLElement {
     constructor() {
         super();
         this.renderAllCards = (cards) => {
-            while (this.lastChild)
-                this.removeChild(this.lastChild);
+            while (this.container.lastChild)
+                this.container.removeChild(this.container.lastChild);
             cards.forEach((card) => {
                 const cardDisplayer = document.createElement('card-displayer');
                 cardDisplayer.setAttribute('card-id', card.id);
@@ -445,6 +461,15 @@ class FoundSetsDisplayer extends HTMLElement {
                     this.container.appendChild(cardDisplay);
                 });
             });
+            const totalSets = gameManager.getSets().get().length;
+            if (sets.length === totalSets) {
+                const youWonButton = document.createElement('button');
+                youWonButton.innerHTML = 'You won!<br>Start again?';
+                youWonButton.onclick = () => {
+                    gameManager.initGame();
+                };
+                this.container.appendChild(youWonButton);
+            }
         });
         this.subscriptions.push(subs);
     }
@@ -472,9 +497,16 @@ FoundSetsDisplayer.styles = `
     border-radius: var(--card-border);
     box-shadow: 2px 1px 1px black;
   }
+
+  button{
+    width: max-content;
+    height: max-content;
+  }
   `.replaceAll('\n', '');
 customElements.define('found-sets-displayer', FoundSetsDisplayer);
 
+const featuresManager = new FeaturesManager();
+globalThis.getFeaturesManager = () => featuresManager;
 const gameManager = new GameManager();
 globalThis.getGameManager = () => gameManager;
 //# sourceMappingURL=dist.js.map
