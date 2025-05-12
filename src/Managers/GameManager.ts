@@ -16,7 +16,7 @@ export class GameManager{
   initGame(){
     let solutions: Set[] = [];
     const featuresManager = getFeaturesManager();
-    const preventNoSolution = featuresManager.isFeatureEnabled('PREVENT-NO-SOLUTION');
+    const preventNoSolution: boolean = featuresManager.isFeatureEnabled('PREVENT-NO-SOLUTION').get();
     do{
       const cards: Array<Signal<Card>> = [];
       while(cards.length < 12){

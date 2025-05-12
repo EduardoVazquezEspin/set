@@ -103,7 +103,7 @@ class GameManager {
     initGame() {
         let solutions = [];
         const featuresManager = getFeaturesManager();
-        const preventNoSolution = featuresManager.isFeatureEnabled('PREVENT-NO-SOLUTION');
+        const preventNoSolution = featuresManager.isFeatureEnabled('PREVENT-NO-SOLUTION').get();
         do {
             const cards = [];
             while (cards.length < 12) {
@@ -179,15 +179,26 @@ class GameManager {
     }
 }
 
+const defaultValues = {
+    'PREVENT-NO-SOLUTION': true
+};
 class FeaturesManager {
     constructor() {
-        this.dictionary = new Map();
-        this.dictionary.set('PREVENT-NO-SOLUTION', true);
+        const urlParams = new URLSearchParams(window.location.search);
+        this.dictionary = new Signal(Object.entries(defaultValues).reduce((acc, curr) => {
+            const queryParam = urlParams.get(curr[0].toUpperCase());
+            if (queryParam === null) {
+                return Object.assign(Object.assign({}, acc), { [curr[0]]: new Signal(curr[1]) });
+            }
+            const isTrue = FeaturesManager.isStringTruthy.includes(queryParam.toUpperCase());
+            return Object.assign(Object.assign({}, acc), { [curr[0]]: new Signal(isTrue) });
+        }, {}));
     }
     isFeatureEnabled(key) {
-        return this.dictionary.get(key);
+        return this.dictionary.get()[key];
     }
 }
+FeaturesManager.isStringTruthy = ['T', 'TRUE', 'Y', 'YES', 'S', 'SI', 'SÍ'];
 
 class ColorSquare extends HTMLElement {
     constructor() {
