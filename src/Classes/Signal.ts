@@ -13,7 +13,11 @@ export class Signal<T> {
 
   set(newValue: T) {
     this.value = newValue;
-    this.subscribers.forEach(fn => fn(newValue));
+    this.trigger();
+  }
+
+  trigger(){
+    this.subscribers.forEach(fn => fn(this.value));
   }
 
   subscribe(callback: (value: T) => void): () => void {

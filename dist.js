@@ -42,7 +42,10 @@ class Signal {
     }
     set(newValue) {
         this.value = newValue;
-        this.subscribers.forEach(fn => fn(newValue));
+        this.trigger();
+    }
+    trigger() {
+        this.subscribers.forEach(fn => fn(this.value));
     }
     subscribe(callback) {
         this.subscribers.push(callback);
@@ -180,22 +183,62 @@ class GameManager {
 }
 
 const defaultValues = {
-    'PREVENT-NO-SOLUTION': true
+    'PREVENT-NO-SOLUTION': {
+        value: 'TRUE',
+        isTruthy: true
+    }
 };
 class FeaturesManager {
     constructor() {
+        this.updateUrl = () => {
+            const title = document.title;
+            const baseUrl = window.location.origin + window.location.pathname;
+            const params = new URLSearchParams();
+            const dict = this.dictionary.get();
+            const keys = Object.keys(dict);
+            const diff = keys.filter(key => dict[key].get().value.get() !== defaultValues[key].value);
+            diff.forEach(key => params.set(key, dict[key].get().value.get()));
+            const url = diff.length === 0 ? baseUrl : baseUrl + '?' + params.toString();
+            window.history.replaceState({}, title, url);
+        };
         const urlParams = new URLSearchParams(window.location.search);
-        this.dictionary = new Signal(Object.entries(defaultValues).reduce((acc, curr) => {
+        const entries = Object.entries(defaultValues);
+        this.dictionary = new Signal(entries.reduce((acc, curr) => {
             const queryParam = urlParams.get(curr[0].toUpperCase());
             if (queryParam === null) {
-                return Object.assign(Object.assign({}, acc), { [curr[0]]: new Signal(curr[1]) });
+                return Object.assign(Object.assign({}, acc), { [curr[0]]: new Signal({ value: new Signal(curr[1].value), isTruthy: new Signal(curr[1].isTruthy) }) });
             }
-            const isTrue = FeaturesManager.isStringTruthy.includes(queryParam.toUpperCase());
-            return Object.assign(Object.assign({}, acc), { [curr[0]]: new Signal(isTrue) });
+            const str = queryParam.toUpperCase();
+            const isTrue = FeaturesManager.isStringTruthy.includes(str);
+            return Object.assign(Object.assign({}, acc), { [curr[0]]: new Signal({ value: new Signal(str), isTruthy: new Signal(isTrue) }) });
         }, {}));
+        this.dictionary.subscribe(this.updateUrl);
+        setTimeout(() => this.setFeatureValue('PREVENT-NO-SOLUTION', 'FALSE'), 2000);
     }
     isFeatureEnabled(key) {
-        return this.dictionary.get()[key];
+        return this.dictionary.get()[key].get().isTruthy;
+    }
+    getFeatureValue(key) {
+        return this.dictionary.get()[key].get().value;
+    }
+    setFeatureValue(key, value) {
+        let str;
+        let isTruthy;
+        if (typeof value === 'string') {
+            str = value;
+            isTruthy = FeaturesManager.isStringTruthy.includes(str);
+        }
+        else {
+            isTruthy = value;
+            str = isTruthy ? 'TRUE' : 'FALSE';
+        }
+        const dictSignal = this.dictionary;
+        const featureSignal = dictSignal.get()[key];
+        const { value: valueSignal, isTruthy: truthySignal } = featureSignal.get();
+        valueSignal.set(str);
+        truthySignal.set(isTruthy);
+        featureSignal.trigger();
+        dictSignal.trigger();
     }
 }
 FeaturesManager.isStringTruthy = ['T', 'TRUE', 'Y', 'YES', 'S', 'SI', 'SÍ'];
