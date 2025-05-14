@@ -1,4 +1,4 @@
-import {Card} from '../interfaces';
+import type {Card} from '../interfaces';
 
 export class BoardDisplayer extends HTMLElement{
   private readonly root: ShadowRoot;

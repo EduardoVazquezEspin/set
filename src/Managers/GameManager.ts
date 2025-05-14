@@ -1,4 +1,4 @@
-import {Signal, Set} from '../Classes';
+import {Signal, Set, CardId} from '../Classes';
 import type {Card} from '../interfaces';
 
 export class GameManager{
@@ -10,30 +10,43 @@ export class GameManager{
     this.cards = new Signal<Array<Signal<Card>>>([]);
     this.sets = new Signal<Array<Set>>([]);
     this.foundSets = new Signal<Array<Set>>([]);
-    this.initGame();
+
+    this.cards.subscribe(this.updateFeatureFlag);
+
+    const featuresManager = getFeaturesManager();
+    const gameId = featuresManager.getFeatureValue('GAME-ID').get();
+    if(gameId === '')
+      this.initGame();
+    else{
+      const cards = CardId.DeCompress(gameId);
+      this.loadGame(cards);
+    }
   }
 
   initGame(){
+    let cards: string[] = [];
     let solutions: Set[] = [];
     const featuresManager = getFeaturesManager();
     const preventNoSolution: boolean = featuresManager.isFeatureEnabled('PREVENT-NO-SOLUTION').get();
     do{
-      const cards: Array<Signal<Card>> = [];
+      cards = [];
       while(cards.length < 12){
-        const cardId = this.generateCardId();
-        if(cards.every((card) => card.get().id !== cardId)){
-          cards.push(new Signal<Card>({id: cardId, isSelected: false}));
+        const cardId = CardId.Random();
+        if(cards.every((id) => id !== cardId)){
+          cards.push(cardId);
         }
       }
-      this.cards.set(cards);
-      solutions = this.calculateAllSets();
+      solutions = this.calculateAllSets(cards);
     } while(preventNoSolution && solutions.length === 0);
-    this.sets.set(solutions);
-    this.foundSets.set([]);
+    this.loadGame(cards, solutions);
   }
 
-  private generateCardId(){
-    return `${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}`;
+  private loadGame(cardIds: string[], solutions?: Set[]){
+    const cards = cardIds.map(id => new Signal({id, isSelected: false}));
+    solutions = solutions ?? this.calculateAllSets(cardIds);
+    this.sets.set(solutions);
+    this.foundSets.set([]);
+    this.cards.set(cards);
   }
 
   getCards(){
@@ -89,13 +102,12 @@ export class GameManager{
     this.foundSets.set([...this.foundSets.get(), set]);
   }
 
-  private calculateAllSets(): Set[]{
-    const cards = this.cards.get().map(it => it.get());
+  private calculateAllSets(cardIds: string[]): Set[]{
     const sets: Set[] = [];
-    for(let i = 0; i < cards.length - 2; i++){
-      for(let j = i + 1; j < cards.length - 1; j++){
-        for(let k = j + 1; k < cards.length; k++){
-          const set = new Set([cards[i].id, cards[j].id, cards[k].id]);
+    for(let i = 0; i < cardIds.length - 2; i++){
+      for(let j = i + 1; j < cardIds.length - 1; j++){
+        for(let k = j + 1; k < cardIds.length; k++){
+          const set = new Set([cardIds[i], cardIds[j], cardIds[k]]);
           if(set.isValid()){
             sets.push(set);
           }
@@ -104,4 +116,11 @@ export class GameManager{
     }
     return sets;
   }
+
+  private updateFeatureFlag = () => {
+    const featuresManager = getFeaturesManager();
+    const cardIds = this.cards.get().map(it => it.get().id);
+    const code = CardId.Compress(cardIds);
+    featuresManager.setFeatureValue('GAME-ID', code);
+  };
 }
