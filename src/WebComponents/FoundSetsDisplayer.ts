@@ -67,7 +67,7 @@ export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
       if(sets.length === totalSets){
         const youWonButton = document.createElement('button');
         youWonButton.innerHTML = 'You won!<br>Start again?';
-        youWonButton.onclick = () => {
+        youWonButton.onmouseup = () => {
           gameManager.initGame();
         };
         this.container.appendChild(youWonButton);

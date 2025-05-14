@@ -100,10 +100,10 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
       return;
 
     if(isClickable){
-      img.addEventListener('click', this.onClick);
+      img.addEventListener('mouseup', this.onClick);
     }
     else{
-      img.removeEventListener('click', this.onClick);
+      img.removeEventListener('mouseup', this.onClick);
     }
   };
 }
