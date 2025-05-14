@@ -99,6 +99,14 @@ export class GameManager{
       return;
     }
 
+    const featuresManager = getFeaturesManager();
+    const audioEnabled = featuresManager.isFeatureEnabled('AUDIO').get();
+    if(audioEnabled){
+      const audioNice: HTMLAudioElement | null = document.getElementById('audio-nice') as HTMLAudioElement | null;
+
+      audioNice?.play();
+    }
+
     this.foundSets.set([...this.foundSets.get(), set]);
   }
 

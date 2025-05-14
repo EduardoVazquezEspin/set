@@ -1,6 +1,6 @@
 import {Signal} from '../Classes';
 
-const featureFlags = ['PREVENT-NO-SOLUTION', 'GAME-ID'] as const;
+const featureFlags = ['PREVENT-NO-SOLUTION', 'GAME-ID', 'AUDIO'] as const;
 
 type FeatureFlag = typeof featureFlags[number];
 
@@ -18,6 +18,10 @@ const defaultValues: Record<FeatureFlag, FeatureFlagValue> = {
   'PREVENT-NO-SOLUTION': {
     value: 'TRUE',
     isTruthy: true
+  },
+  'AUDIO': {
+    value: 'FALSE',
+    isTruthy: false
   },
   'GAME-ID': {
     value: '',
