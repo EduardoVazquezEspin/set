@@ -1,12 +1,33 @@
 export abstract class CardId{
+  private static hardcodedConversion = {
+    '0120': '!',
+    '1122': '$',
+    '2221': '%',
+    '2222': '-'
+  };
+
+  private static reverseHardcodedConversion = {
+    '!': '0120',
+    '$': '1122',
+    '%': '2221',
+    '-': '2222'
+  };
+
+  private static lowerCaseRegex = /'[A-Z]/ig;
+
   static Random(){
     return `${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}`;
   }
 
   private static CompressOne(cardId: string){
-    const num1 = 3 * parseInt(cardId[0]) + parseInt(cardId[1]);
-    const num2 = 3 * parseInt(cardId[2]) + parseInt(cardId[3]);
-    return String.fromCharCode(num1 + 49) + String.fromCharCode(num2 + 49); // '1' is the lowest
+    const result = CardId.hardcodedConversion[cardId as keyof typeof CardId.hardcodedConversion];
+    if(result !== undefined)
+      return result;
+    const num = 27 * parseInt(cardId[0]) + 9 * parseInt(cardId[1]) + 3 * parseInt(cardId[2]) + parseInt(cardId[3]);
+    const char = String.fromCharCode(num + 48); // '0' is the lowest
+    if(char === char.toUpperCase())
+      return char;
+    return '\'' + char;
   }
 
   static Compress(cardIds: string[]): string{
@@ -14,8 +35,15 @@ export abstract class CardId{
   }
 
   private static DeCompressChar(char: string){
-    let x = char.charCodeAt(0) - 49; // '1' is the lowest
+    const res = CardId.reverseHardcodedConversion[char as keyof typeof CardId.reverseHardcodedConversion];
+    if(res !== undefined)
+      return res;
+    let x = char.charCodeAt(0) - 48; // '0' is the lowest
     let result = (x % 3).toString();
+    x = Math.floor(x / 3);
+    result = (x % 3).toString() + result;
+    x = Math.floor(x / 3);
+    result = (x % 3).toString() + result;
     x = Math.floor(x / 3);
     result = (x % 3).toString() + result;
     return result;
@@ -23,8 +51,9 @@ export abstract class CardId{
 
   static DeCompress(str: string): string[]{
     const result = [];
-    for(let i = 0; i < str.length / 2; i++){
-      result.push(this.DeCompressChar(str[2 * i]) + this.DeCompressChar(str[2 * i + 1]));
+    const lowerStr = str.replaceAll(CardId.lowerCaseRegex, it => it[1].toLowerCase());
+    for(let i = 0; i < lowerStr.length; i++){
+      result.push(this.DeCompressChar(lowerStr[i]));
     }
     return result;
   }
