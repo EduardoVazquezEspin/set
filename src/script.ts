@@ -21,7 +21,7 @@ async function fetchSetImages(){
     try{
       const id = toBase3(index - 1);
       const res = await fetch(`http://www.setgame.com/sites/all/modules/setgame_set/assets/images/new/${index}.png`);
-      const path = `./public/${id}.png`;
+      const path = `./img/${id}.png`;
       if(fs.existsSync(path)) fs.rmSync(path);
       const fileStream = fs.createWriteStream(path, {flags: 'wx'});
       await finished(Readable.fromWeb(res.body as ReadableStream<any>).pipe(fileStream));

@@ -90,7 +90,7 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
 
     const img = this.root.querySelector('img');
     if(img === null) return;
-    img.src = `./public/${value}.png`;
+    img.src = `./img/${value}.png`;
   }
 
   private attributeChangedCallbackClickable = (value: string | null) => {
