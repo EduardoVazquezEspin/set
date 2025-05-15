@@ -95,14 +95,20 @@ export class FeaturesManager{
     const title = document.title;
 
     const baseUrl = window.location.origin + window.location.pathname;
-    const params = new URLSearchParams();
+    const params: Partial<Record<FeatureFlag, string>> = {};
 
     const dict = this.dictionary.get();
     const keys = Object.keys(dict) as FeatureFlag[];
     const diff = keys.filter(key => dict[key].get().value.get() !== defaultValues[key].value);
-    diff.forEach(key => params.set(key, dict[key].get().value.get()));
+    diff.forEach(key => params[key] = dict[key].get().value.get());
+    const serialParams = Object.entries(params).reduce((acc, curr, index) => {
+      if(index !== 0)
+        acc += '&';
+      acc += curr[0] + '=' + curr[1];
+      return acc;
+    }, '');
 
-    const url = diff.length === 0 ? baseUrl : baseUrl + '?' + params.toString();
+    const url = diff.length === 0 ? baseUrl : baseUrl + '?' + serialParams;
 
     window.history.replaceState({}, title, url);
   };

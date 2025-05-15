@@ -3,17 +3,17 @@ export abstract class CardId{
     '0120': '!',
     '1122': '$',
     '2221': '%',
-    '2222': '-'
+    '2222': '~'
   };
 
   private static reverseHardcodedConversion = {
     '!': '0120',
     '$': '1122',
     '%': '2221',
-    '-': '2222'
+    '~': '2222'
   };
 
-  private static lowerCaseRegex = /'[A-Z]/ig;
+  private static lowerCaseRegex = /-[A-Z]/ig;
 
   static Random(){
     return `${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}${Math.floor(Math.random() * 3)}`;
@@ -27,7 +27,7 @@ export abstract class CardId{
     const char = String.fromCharCode(num + 48); // '0' is the lowest
     if(char === char.toUpperCase())
       return char;
-    return '\'' + char;
+    return '-' + char;
   }
 
   static Compress(cardIds: string[]): string{
