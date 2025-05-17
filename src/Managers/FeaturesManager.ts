@@ -62,6 +62,10 @@ export class FeaturesManager{
     this.dictionary.subscribe(this.updateUrl);
   }
 
+  onWindowLoad(){
+
+  }
+
   isFeatureEnabled(key: FeatureFlag): Signal<boolean>{
     return this.dictionary.get()[key].get().isTruthy;
   }

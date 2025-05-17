@@ -4,6 +4,7 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
   static observedAttributes = ['card-id', 'clickable'];
 
   readonly root: ShadowRoot;
+  private img: HTMLImageElement;
   private subscriptions: Array<() => void>;
 
   private static styles = /* css */`
@@ -32,9 +33,10 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
     style.innerText = CardDisplayer.styles;
     this.root.appendChild(style);
 
-    const img = document.createElement('img');
-    img.setAttribute('class', 'card');
-    this.root.appendChild(img);
+    this.img = document.createElement('img');
+    this.img.setAttribute('class', 'card');
+    this.img.setAttribute('alt', this.getAttribute('card-id') ?? 'Invalid Card');
+    this.root.appendChild(this.img);
   }
 
   connectedCallback(){
@@ -76,34 +78,28 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
   }
 
   private attributeChangedCallbackIsClicked = (card: Card) => {
-    const img = this.root.querySelector('img');
-    if(img === null) return;
     if(card.isSelected)
-      img.setAttribute('class', 'card clicked');
+      this.img.setAttribute('class', 'card clicked');
     else
-      img.setAttribute('class', 'card');
+      this.img.setAttribute('class', 'card');
   };
 
   private attributeChangedCallbackCardId(value: string | null){
     if(value === null || !CardDisplayer.isIdValidRegex.test(value))
       return;
 
-    const img = this.root.querySelector('img');
-    if(img === null) return;
-    img.src = `./img/${value}.png`;
+    this.img.src = `./img/${value}.png`;
+    this.img.alt = value;
   }
 
   private attributeChangedCallbackClickable = (value: string | null) => {
     const isClickable = value === 'true';
-    const img = this.root.querySelector('img');
-    if(img === null)
-      return;
 
     if(isClickable){
-      img.addEventListener('mouseup', this.onClick);
+      this.img.addEventListener('mouseup', this.onClick);
     }
     else{
-      img.removeEventListener('mouseup', this.onClick);
+      this.img.removeEventListener('mouseup', this.onClick);
     }
   };
 }

@@ -58,6 +58,7 @@ export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
         cards.forEach(card => {
           const cardDisplay = document.createElement('img');
           cardDisplay.src = `./img/${card}R.png`;
+          cardDisplay.alt = card + 'R';
           cardDisplay.setAttribute('class', 'card');
           this.container.appendChild(cardDisplay);
         });

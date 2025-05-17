@@ -1,20 +1,26 @@
 import {Signal, Set, CardId} from '../Classes';
 import type {Card} from '../interfaces';
+import type {AudioManager} from './AudioManager';
+import type {FeaturesManager} from './FeaturesManager';
 
 export class GameManager{
   private cards: Signal<Array<Signal<Card>>>;
   private sets: Signal<Array<Set>>;
   private foundSets: Signal<Array<Set>>;
+  private featuresManager: FeaturesManager;
+  private audioManager: AudioManager;
 
-  constructor(){
+  constructor(featuresManager: FeaturesManager, audioManager: AudioManager){
+    this.featuresManager = featuresManager;
+    this.audioManager = audioManager;
+
     this.cards = new Signal<Array<Signal<Card>>>([]);
     this.sets = new Signal<Array<Set>>([]);
     this.foundSets = new Signal<Array<Set>>([]);
 
     this.cards.subscribe(this.updateFeatureFlag);
 
-    const featuresManager = getFeaturesManager();
-    const gameId = featuresManager.getFeatureValue('GAME-ID').get();
+    const gameId = this.featuresManager.getFeatureValue('GAME-ID').get();
     if(gameId === '')
       this.initGame();
     else{
@@ -23,11 +29,13 @@ export class GameManager{
     }
   }
 
+  onWindowLoad(){
+  }
+
   initGame(){
     let cards: string[] = [];
     let solutions: Set[] = [];
-    const featuresManager = getFeaturesManager();
-    const preventNoSolution: boolean = featuresManager.isFeatureEnabled('PREVENT-NO-SOLUTION').get();
+    const preventNoSolution: boolean = this.featuresManager.isFeatureEnabled('PREVENT-NO-SOLUTION').get();
     do{
       cards = [];
       while(cards.length < 12){
@@ -90,24 +98,24 @@ export class GameManager{
     selectedCards.forEach(it => it.set({id: it.get().id, isSelected: false}));
 
     if(!set.isValid()){
+      this.audioManager.play('wrong');
       alert('Wrong');
       return;
     }
 
     if(this.foundSets.get().some(it => it.equals(set))){
+      this.audioManager.play('wrong');
       alert('Already found');
       return;
     }
 
-    const featuresManager = getFeaturesManager();
-    const audioEnabled = featuresManager.isFeatureEnabled('AUDIO').get();
-    if(audioEnabled){
-      const audioNice: HTMLAudioElement | null = document.getElementById('audio-nice') as HTMLAudioElement | null;
-
-      audioNice?.play();
-    }
-
     this.foundSets.set([...this.foundSets.get(), set]);
+
+    if(this.foundSets.get().length === this.sets.get().length){
+      this.audioManager.play('victory');
+    }else {
+      this.audioManager.play('correct');
+    }
   }
 
   private calculateAllSets(cardIds: string[]): Set[]{
@@ -126,9 +134,8 @@ export class GameManager{
   }
 
   private updateFeatureFlag = () => {
-    const featuresManager = getFeaturesManager();
     const cardIds = this.cards.get().map(it => it.get().id);
     const code = CardId.Compress(cardIds);
-    featuresManager.setFeatureValue('GAME-ID', code);
+    this.featuresManager.setFeatureValue('GAME-ID', code);
   };
 }

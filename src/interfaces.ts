@@ -1,4 +1,4 @@
-import type {FeaturesManager, GameManager} from './Managers';
+import type {AudioManager, FeaturesManager, GameManager} from './Managers';
 
 export interface IWebComponent{
     connectedCallback(): void;
@@ -13,5 +13,9 @@ export interface Card{
 
 declare global{
     function getGameManager(): GameManager;
-    function getFeaturesManager(): FeaturesManager
+    function getFeaturesManager(): FeaturesManager;
+    function getAudioManager(): AudioManager;
+    interface Window{
+        webkitAudioContext: typeof AudioContext;
+    }
 }
