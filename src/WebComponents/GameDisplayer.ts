@@ -9,11 +9,22 @@ export class GameDisplayer extends HTMLElement implements IWebComponent{
   private subscriptions: Array<() => void>;
 
   private static styles = /* css */`
+  * {
+    font-family: MightySouly;
+    font-size: 48px;
+
+    margin: 0;
+    padding: 0;
+  }
   .container {
     display: flex;
     flex-direction: row;
   }
-  .menu{
+  p {
+    margin: 5px;
+    width: 100%;
+    max-width: calc(3 * var(--mini-card-w));
+    text-align: center;
   }
   `.replaceAll('\n', '');
 
@@ -43,6 +54,9 @@ export class GameDisplayer extends HTMLElement implements IWebComponent{
 
     const foundSets = document.createElement('found-sets-displayer');
     menu.appendChild(foundSets);
+
+    const playAgainButton = document.createElement('play-again-button');
+    menu.appendChild(playAgainButton);
   }
 
   connectedCallback(){
@@ -53,7 +67,7 @@ export class GameDisplayer extends HTMLElement implements IWebComponent{
     this.subscriptions = [];
 
     const unsubTotalSets = totalSets.subscribeAndRun(sets => {
-      this.totalSetsP.innerText = `Total sets: ${sets.length}`;
+      this.totalSetsP.innerText = `${sets.length} SETS`;
     });
 
     this.subscriptions.push(unsubTotalSets);

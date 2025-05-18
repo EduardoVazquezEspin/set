@@ -63,16 +63,6 @@ export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
           this.container.appendChild(cardDisplay);
         });
       });
-
-      const totalSets = gameManager.getSets().get().length;
-      if(sets.length === totalSets){
-        const youWonButton = document.createElement('button');
-        youWonButton.innerHTML = 'You won!<br>Start again?';
-        youWonButton.onmouseup = () => {
-          gameManager.initGame();
-        };
-        this.container.appendChild(youWonButton);
-      }
     });
 
     this.subscriptions.push(subs);
