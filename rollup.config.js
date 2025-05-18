@@ -20,7 +20,7 @@ export default [
       commonjs(),
       babel({plugins: ['babel-plugin-styled-components'], exclude: 'node_modules/**'}), typescript({tsconfig: './tsconfig.json'}),
       postcss(),
-      terser()
+    //  terser()
     ],
   },
 ];

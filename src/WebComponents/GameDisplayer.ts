@@ -1,8 +1,6 @@
 import {IWebComponent} from '../interfaces';
 
 export class GameDisplayer extends HTMLElement implements IWebComponent{
-  static observedAttributes = ['card-array'];
-
   private readonly root: ShadowRoot;
   private readonly container: HTMLDivElement;
   private readonly totalSetsP: HTMLParagraphElement;
