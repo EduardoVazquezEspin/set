@@ -19,12 +19,12 @@ export class PlayAgainButton extends HTMLElement implements IWebComponent{
     box-sizing: border-box;
     color: #000000;
     display: flex;
-    font-family: ui-sans-serif,system-ui,-apple-system,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
-    font-size: 1rem;
+    font-family: MightySouly,ui-sans-serif,system-ui,-apple-system,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+    font-size: 1.25rem;
     font-weight: 700;
     justify-content: center;
     line-height: 1.75rem;
-    padding: .75rem 1.65rem;
+    padding: .75rem 3rem;
     position: relative;
     text-align: center;
     text-decoration: none #000000 solid;
@@ -59,11 +59,10 @@ export class PlayAgainButton extends HTMLElement implements IWebComponent{
     left: 2px;
   }
   
-  @media (min-width: 768px) {
-    .play-button {
-      padding: .75rem 3rem;
-      font-size: 1.25rem;
-    }
+  @font-face {
+    font-family: 'MightySouly';
+    src: url('MightySouly-lxggD.woff2') format('woff2');
+    src: url('MightySouly-lxggD.ttf') format('ttf');
   }
   `.replaceAll('\n', '');
 

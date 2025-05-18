@@ -1,4 +1,5 @@
-import {Card, IWebComponent} from '../interfaces';
+import {CardImg} from '../Classes';
+import type {Card, IWebComponent} from '../interfaces';
 
 export class CardDisplayer extends HTMLElement implements IWebComponent{
   static observedAttributes = ['card-id', 'clickable'];
@@ -8,14 +9,11 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
   private subscriptions: Array<() => void>;
 
   private static styles = /* css */`
-  .card {
-    width: var(--card-w);
-    height: var(--card-h);
-    border: 1px black solid;
-    border-radius: var(--card-border);
-    box-shadow: 2px 1px 1px black;
-    cursor: pointer;
+  * {
+    margin: 0;
+    padding: 0;
   }
+  ${CardImg.CardImgStyle}
   .clicked {
     filter: brightness(50%);
   }
@@ -34,8 +32,6 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
     this.root.appendChild(style);
 
     this.img = document.createElement('img');
-    this.img.setAttribute('class', 'card');
-    this.img.setAttribute('alt', this.getAttribute('card-id') ?? 'Invalid Card');
     this.root.appendChild(this.img);
   }
 
@@ -46,9 +42,6 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
     const gameManager = getGameManager();
     const card = gameManager.getCard(cardId);
     if(card === undefined) return;
-
-    this.subscriptions.forEach(cb => cb());
-    this.subscriptions = [];
 
     const subs = card.subscribeAndRun(this.attributeChangedCallbackIsClicked);
     this.subscriptions.push(subs);
@@ -88,8 +81,7 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
     if(value === null || !CardDisplayer.isIdValidRegex.test(value))
       return;
 
-    this.img.src = `./img/${value}.png`;
-    this.img.alt = value;
+    CardImg.UpdateCardImg(this.img, value);
   }
 
   private attributeChangedCallbackClickable = (value: string | null) => {

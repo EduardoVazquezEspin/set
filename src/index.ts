@@ -1,4 +1,4 @@
-import {FeaturesManager, GameManager, AudioManager, ErrorManager} from './Managers';
+import {FeaturesManager, GameManager, AudioManager, DialogManager} from './Managers';
 import './WebComponents';
 
 const featuresManager = new FeaturesManager();
@@ -7,10 +7,10 @@ globalThis.getFeaturesManager = () => featuresManager;
 const audioManager = new AudioManager(featuresManager);
 globalThis.getAudioManager = () => audioManager;
 
-const errorManager = new ErrorManager();
-globalThis.getErrorManager = () => errorManager;
+const dialogManager = new DialogManager();
+globalThis.getDialogManager = () => dialogManager;
 
-const gameManager = new GameManager(featuresManager, audioManager, errorManager);
+const gameManager = new GameManager(featuresManager, audioManager, dialogManager);
 globalThis.getGameManager = () => gameManager;
 
 window.onload = function(){

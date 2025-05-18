@@ -6,12 +6,16 @@ export class BoardDisplayer extends HTMLElement{
   private subscriptions: Array<() => void>;
 
   private static styles = /* css */`
+  * {
+    margin: 0;
+    padding: 0;
+  }
   .container {
     display: grid;
     grid-template-columns: var(--card-w) var(--card-w) var(--card-w);
+    grid-template-rows: repeat(100, var(--card-h));
     grid-gap: 10px;
     padding: 10px;
-  
   }
   `.replaceAll('\n', '');
 

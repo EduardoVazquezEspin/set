@@ -1,3 +1,4 @@
+import {CardImg} from '../Classes';
 import {IWebComponent} from '../interfaces';
 
 export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
@@ -12,15 +13,7 @@ export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
     grid-gap: 3px;
     padding: 5px;
   }
-
-  .card {
-    width: var(--mini-card-w);
-    height: var(--mini-card-h);
-    border: 1px black solid;
-    border-radius: var(--card-border);
-    box-shadow: 2px 1px 1px black;
-  }
-
+  ${CardImg.ReversedCardImgStyle()}
   button{
     width: max-content;
     height: max-content;
@@ -56,10 +49,7 @@ export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
       sets.forEach(set => {
         const cards = set.getCards();
         cards.forEach(card => {
-          const cardDisplay = document.createElement('img');
-          cardDisplay.src = `./img/${card}R.png`;
-          cardDisplay.alt = card + 'R';
-          cardDisplay.setAttribute('class', 'card');
+          const cardDisplay = CardImg.CreateCardImg(card, {isReversed: true});
           this.container.appendChild(cardDisplay);
         });
       });

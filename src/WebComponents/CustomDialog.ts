@@ -1,6 +1,7 @@
+import {CardImg} from '../Classes';
 import {IWebComponent} from '../interfaces';
 
-export class ErrorDialog extends HTMLElement implements IWebComponent{
+export class CustomDialog extends HTMLElement implements IWebComponent{
   static observedAttributes = ['title', 'message', 'cards'];
 
   private readonly root: ShadowRoot;
@@ -12,6 +13,7 @@ export class ErrorDialog extends HTMLElement implements IWebComponent{
     padding; 0;
 
     text-align: center;
+    font-family: MightySouly;
   }
   .container{
     position: fixed;
@@ -27,12 +29,17 @@ export class ErrorDialog extends HTMLElement implements IWebComponent{
     left: 50%;
     transform: translate(-50%, -50%);
   }
-  .card {
-    width: var(--mini-card-w);
-    height: var(--mini-card-h);
-    border: 1px black solid;
-    border-radius: var(--card-border);
-    box-shadow: 2px 1px 1px black;
+  ${CardImg.ReversedCardImgStyle(1.5)}
+  h1 {
+    font-size: 48px;
+  }
+  p {
+    font-size: 28px;
+  }
+  @font-face {
+    font-family: 'MightySouly';
+    src: url('MightySouly-lxggD.woff2') format('woff2');
+    src: url('MightySouly-lxggD.ttf') format('ttf');
   }
   `.replaceAll('\n', '');
 
@@ -47,11 +54,10 @@ export class ErrorDialog extends HTMLElement implements IWebComponent{
     this.root.appendChild(container);
 
     const styles = document.createElement('style');
-    styles.innerText = ErrorDialog.styles;
+    styles.innerText = CustomDialog.styles;
     this.root.appendChild(styles);
 
     this.dialog = document.createElement('dialog');
-    this.dialog.innerHTML = this.getAttribute('error-message') ?? '';
     this.dialog.setAttribute('open', 'true');
     this.dialog.addEventListener('click', this.onClick);
     this.root.appendChild(this.dialog);
@@ -71,29 +77,48 @@ export class ErrorDialog extends HTMLElement implements IWebComponent{
   }
 
   private onClick = () => {
-    const errorManager = getErrorManager();
-    errorManager.closeErrorDialog();
+    const DialogManager = getDialogManager();
+    DialogManager.closeCustomDialog();
   };
 
   private renderDialog(){
+    while(this.dialog.lastElementChild !== null)
+      this.dialog.removeChild(this.dialog.lastElementChild);
+
     const title = this.getAttribute('title') ?? '';
     const message = this.getAttribute('message') ?? '';
     const cards = this.getAttribute('cards')?.split(',') ?? [];
 
-    this.dialog.innerHTML = /* html */`
-      <h1 style="margin-bottom: 15px;">${title}</h1>
-      ${cards.map(card => /* html */`
-        <img src = './img/${card}R.png' alt='${card}R' class='card'>
-        `.replaceAll('\n', '')).join('')}
-      <p style="margin-top: 10px;">${message}</p>
-    `.replaceAll('\n', '');
+    const titleElement = document.createElement('h1');
+    titleElement.innerHTML = title;
+    this.dialog.appendChild(titleElement);
+
+    this.createDivider('15px');
+
+    cards.forEach(cardId => {
+      const img = CardImg.CreateCardImg(cardId, {isReversed: true});
+      this.dialog.append(img);
+    });
+
+    if(cards.length !== 0)
+      this.createDivider('10px');
+
+    const messageElement = document.createElement('p');
+    messageElement.innerHTML = message;
+    this.dialog.appendChild(messageElement);
+  }
+
+  private createDivider(height: string){
+    const divider = document.createElement('div');
+    divider.setAttribute('style', `width: 0; height: ${height};`);
+    this.dialog.appendChild(divider);
   }
 }
 
-customElements.define('error-dialog', ErrorDialog);
+customElements.define('custom-dialog', CustomDialog);
 
 declare global {
   interface HTMLElementTagNameMap{
-    'error-dialog': ErrorDialog
+    'custom-dialog': CustomDialog
   }
 }

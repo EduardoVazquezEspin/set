@@ -1,7 +1,7 @@
 import {Signal, Set, CardId} from '../Classes';
 import type {Card} from '../interfaces';
 import type {AudioManager} from './AudioManager';
-import type {ErrorManager} from './ErrorManager';
+import type {DialogManager} from './DialogManager';
 import type {FeaturesManager} from './FeaturesManager';
 
 export class GameManager{
@@ -10,12 +10,12 @@ export class GameManager{
   private foundSets: Signal<Array<Set>>;
   private featuresManager: FeaturesManager;
   private audioManager: AudioManager;
-  private errorManager: ErrorManager;
+  private DialogManager: DialogManager;
 
-  constructor(featuresManager: FeaturesManager, audioManager: AudioManager, errorManager: ErrorManager){
+  constructor(featuresManager: FeaturesManager, audioManager: AudioManager, DialogManager: DialogManager){
     this.featuresManager = featuresManager;
     this.audioManager = audioManager;
-    this.errorManager = errorManager;
+    this.DialogManager = DialogManager;
 
     this.cards = new Signal<Array<Signal<Card>>>([]);
     this.sets = new Signal<Array<Set>>([]);
@@ -102,13 +102,13 @@ export class GameManager{
 
     if(!set.isValid()){
       this.audioManager.play('wrong');
-      this.errorManager.displayError('Wrong', 'These cards do not form a set', selectedIds);
+      this.DialogManager.displayError('Wrong', 'These cards do not form a set', selectedIds);
       return;
     }
 
     if(this.foundSets.get().some(it => it.equals(set))){
       this.audioManager.play('wrong');
-      this.errorManager.displayError('Already found', 'You have found these cards already', selectedIds);
+      this.DialogManager.displayError('Already found', 'You have found these cards already', selectedIds);
       return;
     }
 
