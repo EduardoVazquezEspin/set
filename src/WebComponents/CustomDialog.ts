@@ -2,7 +2,7 @@ import {CardImg} from '../Classes';
 import {IWebComponent} from '../interfaces';
 
 export class CustomDialog extends HTMLElement implements IWebComponent{
-  static observedAttributes = ['title', 'message', 'cards'];
+  static observedAttributes = ['title', 'message', 'cards', 'border-color'];
 
   private readonly root: ShadowRoot;
   private readonly dialog: HTMLDialogElement;
@@ -28,6 +28,8 @@ export class CustomDialog extends HTMLElement implements IWebComponent{
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    border-radius: 10px;
+    box-shadow: 0 15px 20px -10px rgba(0, 0, 0, 0.1);
   }
   ${CardImg.ReversedCardImgStyle(1.5)}
   h1 {
@@ -88,6 +90,7 @@ export class CustomDialog extends HTMLElement implements IWebComponent{
     const title = this.getAttribute('title') ?? '';
     const message = this.getAttribute('message') ?? '';
     const cards = this.getAttribute('cards')?.split(',') ?? [];
+    const borderColor = this.getAttribute('border-color') ?? '';
 
     const titleElement = document.createElement('h1');
     titleElement.innerHTML = title;
@@ -106,6 +109,10 @@ export class CustomDialog extends HTMLElement implements IWebComponent{
     const messageElement = document.createElement('p');
     messageElement.innerHTML = message;
     this.dialog.appendChild(messageElement);
+
+    const dialogStyle = borderColor ? `border-color: ${borderColor};` : '';
+    if(borderColor !== '')
+      this.dialog.setAttribute('style', dialogStyle);
   }
 
   private createDivider(height: string){

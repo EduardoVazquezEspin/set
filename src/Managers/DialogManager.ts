@@ -10,6 +10,7 @@ export class DialogManager{
     this.CustomDialog.setAttribute('title', title);
     this.CustomDialog.setAttribute('message', message);
     this.CustomDialog.setAttribute('cards', cards.join(','));
+    this.CustomDialog.setAttribute('border-color', 'red');
     document.body.appendChild(this.CustomDialog);
   }
 
