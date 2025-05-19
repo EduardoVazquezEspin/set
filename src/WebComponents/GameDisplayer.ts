@@ -65,7 +65,7 @@ export class GameDisplayer extends HTMLElement implements IWebComponent{
     this.subscriptions = [];
 
     const unsubTotalSets = totalSets.subscribeAndRun(sets => {
-      this.totalSetsP.innerText = `${sets.length} SETS`;
+      this.totalSetsP.innerText = `${sets.length} SET${sets.length !== 1 ? 'S' : ''}`;
     });
 
     this.subscriptions.push(unsubTotalSets);

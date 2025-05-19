@@ -12,7 +12,7 @@ export default [
       {
         file: './docs/dist.js',
         format: 'cjs',
-        sourcemap: true,
+        sourcemap: false,
       },
     ],
     plugins: [
