@@ -22,7 +22,8 @@
     "types": [ "node", "@types/jest" ]
    },
   "include": [
-    "src"
+    "src",
+    "src/WebComponents/TemplateComponent"
   ],
   "ts-node": {
     "esm": true
