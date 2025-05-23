@@ -50,6 +50,9 @@ export class GameDisplayer extends HTMLElement implements IWebComponent{
     this.totalSetsP = document.createElement('p');
     menu.appendChild(this.totalSetsP);
 
+    const time = document.createElement('clock-displayer');
+    menu.appendChild(time);
+
     const foundSets = document.createElement('found-sets-displayer');
     menu.appendChild(foundSets);
 

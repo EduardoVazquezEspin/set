@@ -1,4 +1,4 @@
-import type {AudioManager, DialogManager, FeaturesManager, GameManager} from './Managers';
+import type {AudioManager, DialogManager, FeaturesManager, GameManager, StatsManager} from './Managers';
 
 export interface IWebComponent{
     connectedCallback(): void;
@@ -16,6 +16,7 @@ declare global{
     function getFeaturesManager(): FeaturesManager;
     function getDialogManager(): DialogManager;
     function getAudioManager(): AudioManager;
+    function getStatsManager(): StatsManager;
     interface Window{
         webkitAudioContext: typeof AudioContext;
     }

@@ -3,6 +3,9 @@ import type {Card} from '../interfaces';
 import type {AudioManager} from './AudioManager';
 import type {DialogManager} from './DialogManager';
 import type {FeaturesManager} from './FeaturesManager';
+import {StatsManager} from './StatsManager';
+
+type ErrorType = 'Already Found' | 'Wrong Set'
 
 export class GameManager{
   private cards: Signal<Array<Signal<Card>>>;
@@ -10,12 +13,19 @@ export class GameManager{
   private foundSets: Signal<Array<Set>>;
   private featuresManager: FeaturesManager;
   private audioManager: AudioManager;
-  private DialogManager: DialogManager;
+  private dialogManager: DialogManager;
+  private statsManager: StatsManager;
 
-  constructor(featuresManager: FeaturesManager, audioManager: AudioManager, DialogManager: DialogManager){
+  constructor(
+    featuresManager: FeaturesManager,
+    audioManager: AudioManager,
+    dialogManager: DialogManager,
+    statsManager: StatsManager
+  ){
     this.featuresManager = featuresManager;
     this.audioManager = audioManager;
-    this.DialogManager = DialogManager;
+    this.dialogManager = dialogManager;
+    this.statsManager = statsManager;
 
     this.cards = new Signal<Array<Signal<Card>>>([]);
     this.sets = new Signal<Array<Set>>([]);
@@ -58,6 +68,7 @@ export class GameManager{
     this.sets.set(solutions);
     this.foundSets.set([]);
     this.cards.set(cards);
+    this.statsManager.resetStats();
   }
 
   getCards(){
@@ -101,24 +112,34 @@ export class GameManager{
     selectedCards.forEach(it => it.set({id: it.get().id, isSelected: false}));
 
     if(!set.isValid()){
-      this.audioManager.play('wrong');
-      this.DialogManager.displayError('Wrong', 'These cards do not form a set', selectedIds);
+      this.onPlayerError('Wrong Set', selectedIds);
       return;
     }
 
     if(this.foundSets.get().some(it => it.equals(set))){
-      this.audioManager.play('wrong');
-      this.DialogManager.displayError('Already found', 'You have found these cards already', selectedIds);
+      this.onPlayerError('Already Found', selectedIds);
       return;
     }
 
     this.foundSets.set([...this.foundSets.get(), set]);
 
     if(this.foundSets.get().length === this.sets.get().length){
-      this.audioManager.play('victory');
+      this.onGameEnd();
     }else {
       this.audioManager.play('correct');
     }
+  }
+
+  private onGameEnd(){
+    this.statsManager.stopTime();
+    this.audioManager.play('victory');
+  }
+
+  private onPlayerError(error: ErrorType, selectedIds: string[]){
+    const message = error === 'Already Found' ? 'You have found these cards already' : 'These cards do not form a set';
+    this.audioManager.play('wrong');
+    this.dialogManager.displayError('Already found', message, selectedIds);
+    this.statsManager.penalize();
   }
 
   private calculateAllSets(cardIds: string[]): Set[]{
