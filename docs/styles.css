@@ -16,4 +16,7 @@
     src: url('MightySouly-lxggD.woff2') format('woff2');
     src: url('MightySouly-lxggD.ttf') format('ttf');
 }
-  
+
+body {
+    background-color: #c1ffe9;
+}

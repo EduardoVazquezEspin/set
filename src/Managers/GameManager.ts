@@ -136,9 +136,10 @@ export class GameManager{
   }
 
   private onPlayerError(error: ErrorType, selectedIds: string[]){
+    const title = error === 'Already Found' ? 'Already found' : 'Wrong';
     const message = error === 'Already Found' ? 'You have found these cards already' : 'These cards do not form a set';
     this.audioManager.play('wrong');
-    this.dialogManager.displayError('Already found', message, selectedIds);
+    this.dialogManager.displayError(title, message, selectedIds);
     this.statsManager.penalize();
   }
 

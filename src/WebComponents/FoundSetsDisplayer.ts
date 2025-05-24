@@ -1,4 +1,3 @@
-import {CardImg} from '../Classes';
 import {IWebComponent} from '../interfaces';
 
 export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
@@ -13,7 +12,6 @@ export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
     grid-gap: 3px;
     padding: 5px;
   }
-  ${CardImg.ReversedCardImgStyle()}
   button{
     width: max-content;
     height: max-content;
@@ -49,8 +47,10 @@ export class FoundSetsDisplayer extends HTMLElement implements IWebComponent{
       sets.forEach(set => {
         const cards = set.getCards();
         cards.forEach(card => {
-          const cardDisplay = CardImg.CreateCardImg(card, {isReversed: true});
-          this.container.appendChild(cardDisplay);
+          const cardDisplayer = document.createElement('card-displayer');
+          cardDisplayer.setAttribute('vertical', 'vertical');
+          cardDisplayer.setAttribute('card-id', card);
+          this.container.appendChild(cardDisplayer);
         });
       });
     });

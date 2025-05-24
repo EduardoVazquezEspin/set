@@ -1,8 +1,7 @@
-import {CardImg} from '../Classes';
 import type {Card, IWebComponent} from '../interfaces';
 
 export class CardDisplayer extends HTMLElement implements IWebComponent{
-  static observedAttributes = ['card-id', 'clickable'];
+  static observedAttributes = ['card-id', 'vertical', 'highlighted'];
 
   readonly root: ShadowRoot;
   private img: HTMLImageElement;
@@ -13,8 +12,22 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
     margin: 0;
     padding: 0;
   }
-  ${CardImg.CardImgStyle}
-  .clicked {
+  .horizontal {
+    width: var(--card-w);
+    height: var(--card-h);
+    border: 1px black solid;
+    border-radius: var(--card-border);
+    box-shadow: 2px 1px 1px black;
+    cursor: pointer;
+  }
+  .vertical {
+    width: var(--mini-card-w);
+    height: var(--mini-card-h);
+    border: 1px black solid;
+    border-radius: var(--card-border);
+    box-shadow: 2px 1px 1px black;
+  }
+  [highlighted] {
     filter: brightness(50%);
   }
   `.replaceAll('\n', '');
@@ -36,6 +49,9 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
   }
 
   connectedCallback(){
+  }
+
+  subscribeToGameManager(){
     const cardId = this.getAttribute('card-id');
     if(cardId === null || !CardDisplayer.isIdValidRegex.test(cardId))
       return;
@@ -46,54 +62,47 @@ export class CardDisplayer extends HTMLElement implements IWebComponent{
     const subs = card.subscribeAndRun(this.attributeChangedCallbackIsClicked);
     this.subscriptions.push(subs);
   }
+
   disconnectedCallback(): void {
     this.subscriptions.forEach(cb => cb());
     this.subscriptions = [];
   }
 
-  private onClick = () => {
-    const cardId = this.getAttribute('card-id');
-    if(cardId === null || !CardDisplayer.isIdValidRegex.test(cardId))
-      return;
-    const gameManager = getGameManager();
-    gameManager.toggleCardSelected(cardId);
+  setOnClick = (onClick: (this: GlobalEventHandlers, ev: MouseEvent) => any) => {
+    this.img.onclick = onClick;
   };
 
   attributeChangedCallback(property: string, oldValue: string | null, newValue: string | null): void {
     if(oldValue === newValue) return;
-    switch(property){
-      case 'card-id':
-        this.attributeChangedCallbackCardId(newValue);
-        break;
-      case 'clickable':
-        this.attributeChangedCallbackClickable(newValue);
-    }
+
+    this.setCardSrc();
   }
 
   private attributeChangedCallbackIsClicked = (card: Card) => {
     if(card.isSelected)
-      this.img.setAttribute('class', 'card clicked');
+      this.setAttribute('highlighted', 'highlighted');
     else
-      this.img.setAttribute('class', 'card');
+      this.removeAttribute('highlighted');
   };
 
-  private attributeChangedCallbackCardId(value: string | null){
-    if(value === null || !CardDisplayer.isIdValidRegex.test(value))
+  private setCardSrc(){
+    const cardId = this.getAttribute('card-id');
+    const isVertical = !!this.getAttribute('vertical');
+    const isHighlighted = !!this.getAttribute('highlighted');
+
+    if(cardId === null || !CardDisplayer.isIdValidRegex.test(cardId))
       return;
 
-    CardImg.UpdateCardImg(this.img, value);
+    const extendedId = cardId + (isVertical ? 'R' : '');
+    const uri = `./img/${extendedId}.png`;
+    if(this.img.src !== uri) this.img.src = uri;
+    this.img.setAttribute('class', isVertical ? 'vertical' : 'horizontal');
+    if(isHighlighted)
+      this.img.setAttribute('highlighted', 'highlighted');
+    else
+      this.img.removeAttribute('highlighted');
+    this.img.setAttribute('alt', extendedId);
   }
-
-  private attributeChangedCallbackClickable = (value: string | null) => {
-    const isClickable = value === 'true';
-
-    if(isClickable){
-      this.img.addEventListener('mouseup', this.onClick);
-    }
-    else{
-      this.img.removeEventListener('mouseup', this.onClick);
-    }
-  };
 }
 
 customElements.define('card-displayer', CardDisplayer);

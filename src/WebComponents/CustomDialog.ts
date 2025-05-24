@@ -1,4 +1,3 @@
-import {CardImg} from '../Classes';
 import {IWebComponent} from '../interfaces';
 
 export class CustomDialog extends HTMLElement implements IWebComponent{
@@ -29,9 +28,8 @@ export class CustomDialog extends HTMLElement implements IWebComponent{
     left: 50%;
     transform: translate(-50%, -50%);
     border-radius: 10px;
-    box-shadow: 0 15px 20px -10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 20px -10px rgba(1, 1, 1, 0.1);
   }
-  ${CardImg.ReversedCardImgStyle(1.5)}
   h1 {
     font-size: 48px;
   }
@@ -99,8 +97,10 @@ export class CustomDialog extends HTMLElement implements IWebComponent{
     this.createDivider('15px');
 
     cards.forEach(cardId => {
-      const img = CardImg.CreateCardImg(cardId, {isReversed: true});
-      this.dialog.append(img);
+      const cardDisplayer = document.createElement('card-displayer');
+      cardDisplayer.setAttribute('vertical', 'vertical');
+      cardDisplayer.setAttribute('card-id', cardId);
+      this.dialog.append(cardDisplayer);
     });
 
     if(cards.length !== 0)

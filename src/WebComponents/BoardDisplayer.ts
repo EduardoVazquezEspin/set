@@ -13,7 +13,7 @@ export class BoardDisplayer extends HTMLElement{
   .container {
     display: grid;
     grid-template-columns: var(--card-w) var(--card-w) var(--card-w);
-    grid-template-rows: repeat(100, var(--card-h));
+    grid-template-rows: repeat(4, var(--card-h));
     grid-gap: 10px;
     padding: 10px;
   }
@@ -61,7 +61,11 @@ export class BoardDisplayer extends HTMLElement{
     cards.forEach((card) => {
       const cardDisplayer = document.createElement('card-displayer');
       cardDisplayer.setAttribute('card-id', card.id);
-      cardDisplayer.setAttribute('clickable', 'true');
+      cardDisplayer.setOnClick(() => {
+        const gameManager = getGameManager();
+        gameManager.toggleCardSelected(card.id);
+      });
+      cardDisplayer.subscribeToGameManager();
       this.container.appendChild(cardDisplayer);
     });
   };
